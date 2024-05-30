@@ -19,6 +19,7 @@
 
 package org.elasticsearch.grok;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.jcodings.specific.UTF8Encoding;
 import org.joni.Matcher;
 import org.joni.NameEntry;
@@ -299,7 +300,7 @@ public final class Grok {
     private static void loadPatterns(Map<String, String> patternBank, InputStream inputStream) throws IOException {
         String line;
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-        while ((line = br.readLine()) != null) {
+        while ((line = BoundedLineReader.readLine(br, 5_000_000)) != null) {
             String trimmedLine = line.replaceAll("^\\s+", "");
             if (trimmedLine.startsWith("#") || trimmedLine.length() == 0) {
                 continue;

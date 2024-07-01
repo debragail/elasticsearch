@@ -6,6 +6,7 @@
 package org.elasticsearch.xpack.sql.qa.jdbc;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Locale;
 
@@ -30,8 +31,10 @@ public class ShowTablesTestCase extends JdbcIntegrationTestCase {
             for (int i = 0; i < indices; i++) {
                 String index = String.format(Locale.ROOT, "test%02d", i);
                 index(index, builder -> builder.field("name", "bob"));
-                h2.createStatement().executeUpdate("INSERT INTO mock VALUES ('" + index + "', 'BASE TABLE', 'INDEX');");
-            }
+                PreparedStatement stmt = h2.prepareStatement("INSERT INTO mock VALUES (?, 'BASE TABLE', 'INDEX');");
+                stmt.setString(1, String.format(Locale.ROOT, "test%02d", i));
+                stmt.execute();
+                        }
 
             ResultSet expected = h2.createStatement().executeQuery("SELECT * FROM mock ORDER BY name");
             assertResultSets(expected, es.createStatement().executeQuery("SHOW TABLES"));

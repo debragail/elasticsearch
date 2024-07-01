@@ -5,6 +5,7 @@
  */
 package org.elasticsearch.xpack.sql.qa.jdbc;
 
+import java.sql.PreparedStatement;
 import org.elasticsearch.common.CheckedSupplier;
 
 import java.sql.Connection;
@@ -62,7 +63,11 @@ public class DatabaseMetaDataTestCase extends JdbcIntegrationTestCase {
             h2.createStatement().executeUpdate("RUNSCRIPT FROM 'classpath:/setup_mock_metadata_get_tables.sql'");
 
             CheckedSupplier<ResultSet, SQLException> all = () ->
-                h2.createStatement().executeQuery("SELECT '" + clusterName() + "' AS TABLE_CAT, * FROM mock");
+                {
+                    PreparedStatement stmt = h2.prepareStatement("SELECT ? AS TABLE_CAT, * FROM mock");
+                    stmt.setString(1, clusterName());
+                    stmt.execute()
+                };
             assertResultSets(all.get(), es.getMetaData().getTables("%", "%", "%", null));
             assertResultSets(all.get(), es.getMetaData().getTables("%", "%", "te%", null));
             assertResultSets(
@@ -78,8 +83,12 @@ public class DatabaseMetaDataTestCase extends JdbcIntegrationTestCase {
         try (Connection h2 = LocalH2.anonymousDb(); Connection es = esJdbc()) {
             h2.createStatement().executeUpdate("RUNSCRIPT FROM 'classpath:/setup_mock_metadata_get_types_of_table.sql'");
 
-            CheckedSupplier<ResultSet, SQLException> all = () -> h2.createStatement()
-                    .executeQuery("SELECT '" + clusterName() + "' AS TABLE_CAT, * FROM mock");
+            CheckedSupplier<ResultSet, SQLException> all = () -> {
+                PreparedStatement stmt = h2.prepareStatement("SELECT ? AS TABLE_CAT, * FROM mock");
+                stmt.setString(1, clusterName());
+                stmt
+                    .execute()
+                        };
             assertResultSets(all.get(), es.getMetaData().getTables("%", "%", "%", new String[] { "BASE TABLE" }));
             assertResultSets(
                     h2.createStatement()
@@ -116,9 +125,12 @@ public class DatabaseMetaDataTestCase extends JdbcIntegrationTestCase {
         try (Connection h2 = LocalH2.anonymousDb();
                 Connection es = esJdbc()) {
             h2.createStatement().executeUpdate("RUNSCRIPT FROM 'classpath:/setup_mock_metadata_get_columns.sql'");
-
-            ResultSet expected = h2.createStatement().executeQuery("SELECT '" + clusterName() + "' AS TABLE_CAT, * FROM mock");
+            PreparedStatement stmt = h2.prepareStatement("SELECT ? AS TABLE_CAT, * FROM mock");
+            stmt.setString(1, clusterName());
+            ResultSet expected = stmt.execute();
             assertResultSets(expected, es.getMetaData().getColumns(null, "%", "%", null));
+
+
         }
     }
 }

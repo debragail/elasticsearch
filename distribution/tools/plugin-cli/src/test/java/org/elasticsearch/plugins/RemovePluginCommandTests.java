@@ -19,6 +19,7 @@
 
 package org.elasticsearch.plugins;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.apache.lucene.util.LuceneTestCase;
 import org.elasticsearch.Version;
 import org.elasticsearch.cli.ExitCodes;
@@ -247,10 +248,10 @@ public class RemovePluginCommandTests extends ESTestCase {
             }
         }.main(new String[] { "-Epath.home=" + home, "fake" }, terminal);
         try (BufferedReader reader = new BufferedReader(new StringReader(terminal.getOutput()))) {
-            assertEquals("-> removing [fake]...", reader.readLine());
+            assertEquals("-> removing [fake]...", BoundedLineReader.readLine(reader, 5_000_000));
             assertEquals("ERROR: plugin [fake] not found; run 'elasticsearch-plugin list' to get list of installed plugins",
-                    reader.readLine());
-            assertNull(reader.readLine());
+                    BoundedLineReader.readLine(reader, 5_000_000));
+            assertNull(BoundedLineReader.readLine(reader, 5_000_000));
         }
     }
 

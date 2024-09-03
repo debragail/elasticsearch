@@ -19,6 +19,7 @@
 
 package org.elasticsearch.test.rest;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
@@ -369,7 +370,7 @@ public abstract class ESRestTestCase extends ESTestCase {
                         int activeTasks = 0;
                         String line;
                         final StringBuilder tasksListString = new StringBuilder();
-                        while ((line = responseReader.readLine()) != null) {
+                        while ((line = BoundedLineReader.readLine(responseReader, 5_000_000)) != null) {
                             final String taskName = line.split("\\s+")[0];
                             if (taskName.startsWith(ListTasksAction.NAME) || taskFilter.test(taskName)) {
                                 continue;

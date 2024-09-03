@@ -19,6 +19,7 @@
 
 package org.elasticsearch.cli;
 
+import io.github.pixee.security.BoundedLineReader;
 import java.io.BufferedReader;
 import java.io.Console;
 import java.io.IOException;
@@ -168,7 +169,7 @@ public abstract class Terminal {
             getWriter().print(text);
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in, Charset.defaultCharset()));
             try {
-                final String line = reader.readLine();
+                final String line = BoundedLineReader.readLine(reader, 5_000_000);
                 if (line == null) {
                     throw new IllegalStateException("unable to read from standard input; is standard input open and a tty attached?");
                 }

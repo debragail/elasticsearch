@@ -18,6 +18,7 @@
  */
 package org.elasticsearch.repositories.gcs;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.elasticsearch.test.fixture.AbstractHttpFixture;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.bytes.BytesReference;
@@ -219,14 +220,14 @@ public class GoogleCloudStorageFixture extends AbstractHttpFixture {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStreamBody, StandardCharsets.ISO_8859_1))) {
                     String line;
                     // read first part delimiter
-                    line = reader.readLine();
+                    line = BoundedLineReader.readLine(reader, 5_000_000);
                     if ((line == null) || (line.equals("--" + boundary) == false)) {
                         return newError(RestStatus.INTERNAL_SERVER_ERROR,
                                 "Error parsing multipart request. Does not start with the part delimiter.");
                     }
                     final Map<String, List<String>> firstPartHeaders = new HashMap<>();
                     // Reads the first part's headers, if any
-                    while ((line = reader.readLine()) != null) {
+                    while ((line = BoundedLineReader.readLine(reader, 5_000_000)) != null) {
                         if (line.equals("\r\n") || (line.length() == 0)) {
                             // end of headers
                             break;
@@ -243,7 +244,7 @@ public class GoogleCloudStorageFixture extends AbstractHttpFixture {
                                 "Error parsing multipart request. Metadata part expected to have the \"application/json\" content type.");
                     }
                     // read metadata part, a single line
-                    line = reader.readLine();
+                    line = BoundedLineReader.readLine(reader, 5_000_000);
                     final byte[] metadata = line.getBytes(StandardCharsets.ISO_8859_1);
                     if ((firstPartContentTypes != null) && (firstPartContentTypes.stream().anyMatch((x -> x.contains("charset=utf-8"))))) {
                         // decode as utf-8
@@ -256,7 +257,7 @@ public class GoogleCloudStorageFixture extends AbstractHttpFixture {
                     bucketNameMatcher.find();
                     final String bucketName = bucketNameMatcher.group(1);
                     // read second part delimiter
-                    line = reader.readLine();
+                    line = BoundedLineReader.readLine(reader, 5_000_000);
                     if ((line == null) || (line.equals("--" + boundary) == false)) {
                         return newError(RestStatus.INTERNAL_SERVER_ERROR,
                                 "Error parsing multipart request. Second part does not start with delimiter. "
@@ -264,7 +265,7 @@ public class GoogleCloudStorageFixture extends AbstractHttpFixture {
                     }
                     final Map<String, List<String>> secondPartHeaders = new HashMap<>();
                     // Reads the second part's headers, if any
-                    while ((line = reader.readLine()) != null) {
+                    while ((line = BoundedLineReader.readLine(reader, 5_000_000)) != null) {
                         if (line.equals("\r\n") || (line.length() == 0)) {
                             // end of headers
                             break;
@@ -448,13 +449,13 @@ public class GoogleCloudStorageFixture extends AbstractHttpFixture {
                                               new InputStreamReader(
                                                   new ByteArrayInputStream(request.getBody()), StandardCharsets.UTF_8))) {
                 String line;
-                while ((line = reader.readLine()) != null) {
+                while ((line = BoundedLineReader.readLine(reader, 5_000_000)) != null) {
                     // Start of a batched request
                     if (line.equals("--" + boundary)) {
                         final Map<String, String> batchedHeaders = new HashMap<>();
 
                         // Reads the headers, if any
-                        while ((line = reader.readLine()) != null) {
+                        while ((line = BoundedLineReader.readLine(reader, 5_000_000)) != null) {
                             if (line.equals("\r\n") || (line.length() == 0)) {
                                 // end of headers
                                 break;
@@ -465,12 +466,12 @@ public class GoogleCloudStorageFixture extends AbstractHttpFixture {
                         }
 
                         // Reads the method and URL
-                        line = reader.readLine();
+                        line = BoundedLineReader.readLine(reader, 5_000_000);
                         final String batchedMethod = line.substring(0, line.indexOf(' '));
                         final URI batchedUri = URI.create(line.substring(batchedMethod.length() + 1, line.lastIndexOf(' ')));
 
                         // Reads the body
-                        line = reader.readLine();
+                        line = BoundedLineReader.readLine(reader, 5_000_000);
                         byte[] batchedBody = new byte[0];
                         if ((line != null) || (line.startsWith("--" + boundary) == false)) {
                             batchedBody = line.getBytes(StandardCharsets.UTF_8);

@@ -19,6 +19,7 @@
 
 package org.elasticsearch.plugins;
 
+import io.github.pixee.security.ZipSecurity;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import org.apache.lucene.search.spell.LevenshteinDistance;
@@ -624,7 +625,7 @@ class InstallPluginCommand extends EnvironmentAwareCommand {
         final Path target = stagingDirectory(pluginsDir);
         pathsToDeleteOnShutdown.add(target);
 
-        try (ZipInputStream zipInput = new ZipInputStream(Files.newInputStream(zip))) {
+        try (ZipInputStream zipInput = ZipSecurity.createHardenedInputStream(Files.newInputStream(zip))) {
             ZipEntry entry;
             byte[] buffer = new byte[8192];
             while ((entry = zipInput.getNextEntry()) != null) {

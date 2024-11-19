@@ -37,6 +37,8 @@ import com.nimbusds.openid.connect.sdk.claims.AccessTokenHash;
 import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 import com.nimbusds.openid.connect.sdk.validators.AccessTokenValidator;
 import com.nimbusds.openid.connect.sdk.validators.IDTokenValidator;
+import io.github.pixee.security.HostValidator;
+import io.github.pixee.security.Urls;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.apache.commons.codec.Charsets;
@@ -602,7 +604,7 @@ public class OpenIdConnectAuthenticator {
                 String jwkSetPath = opConfig.getJwkSetPath();
                 if (jwkSetPath.startsWith("https://")) {
                     final JWSVerificationKeySelector keySelector = new JWSVerificationKeySelector(requestedAlgorithm,
-                        new ReloadableJWKSource(new URL(jwkSetPath)));
+                        new ReloadableJWKSource(Urls.create(jwkSetPath, Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS)));
                     idTokenValidator = new IDTokenValidator(opConfig.getIssuer(), rpConfig.getClientId(), keySelector, null);
                 } else {
                     setMetadataFileWatcher(jwkSetPath);

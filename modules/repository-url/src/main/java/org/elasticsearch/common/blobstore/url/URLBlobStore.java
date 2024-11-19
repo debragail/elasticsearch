@@ -19,6 +19,8 @@
 
 package org.elasticsearch.common.blobstore.url;
 
+import io.github.pixee.security.HostValidator;
+import io.github.pixee.security.Urls;
 import org.elasticsearch.common.blobstore.BlobContainer;
 import org.elasticsearch.common.blobstore.BlobPath;
 import org.elasticsearch.common.blobstore.BlobStore;
@@ -105,10 +107,10 @@ public class URLBlobStore implements BlobStore {
         if (paths.length == 0) {
             return path();
         }
-        URL blobPath = new URL(this.path, paths[0] + "/");
+        URL blobPath = Urls.create(this.path, paths[0] + "/", Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
         if (paths.length > 1) {
             for (int i = 1; i < paths.length; i++) {
-                blobPath = new URL(blobPath, paths[i] + "/");
+                blobPath = Urls.create(blobPath, paths[i] + "/", Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
             }
         }
         return blobPath;

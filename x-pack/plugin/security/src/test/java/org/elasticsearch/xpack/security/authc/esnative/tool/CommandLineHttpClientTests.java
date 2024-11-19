@@ -5,6 +5,8 @@
  */
 package org.elasticsearch.xpack.security.authc.esnative.tool;
 
+import io.github.pixee.security.HostValidator;
+import io.github.pixee.security.Urls;
 import org.elasticsearch.common.settings.MockSecureSettings;
 import org.elasticsearch.common.settings.SecureString;
 import org.elasticsearch.common.settings.Settings;
@@ -57,7 +59,7 @@ public class CommandLineHttpClientTests extends ESTestCase {
             .put("xpack.security.http.ssl.verification_mode", VerificationMode.CERTIFICATE)
             .build();
         CommandLineHttpClient client = new CommandLineHttpClient(settings, environment);
-        HttpResponse httpResponse = client.execute("GET", new URL("https://localhost:" + webServer.getPort() + "/test"), "u1",
+        HttpResponse httpResponse = client.execute("GET", Urls.create("https://localhost:" + webServer.getPort() + "/test", Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS), "u1",
                 new SecureString(new char[]{'p'}), () -> null, is -> responseBuilder(is));
 
         assertNotNull("Should have http response", httpResponse);

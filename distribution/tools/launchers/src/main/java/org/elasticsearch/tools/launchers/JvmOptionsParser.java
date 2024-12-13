@@ -19,6 +19,7 @@
 
 package org.elasticsearch.tools.launchers;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.elasticsearch.tools.java_version_checker.JavaVersion;
 
 import java.io.BufferedReader;
@@ -204,7 +205,7 @@ final class JvmOptionsParser {
             final InvalidLineConsumer invalidLineConsumer) throws IOException {
         int lineNumber = 0;
         while (true) {
-            final String line = br.readLine();
+            final String line = BoundedLineReader.readLine(br, 5_000_000);
             lineNumber++;
             if (line == null) {
                 break;

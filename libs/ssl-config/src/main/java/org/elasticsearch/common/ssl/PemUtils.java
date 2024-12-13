@@ -19,6 +19,7 @@
 
 package org.elasticsearch.common.ssl;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.elasticsearch.common.CharArrays;
 
 import javax.crypto.Cipher;
@@ -95,9 +96,9 @@ final class PemUtils {
      */
     public static PrivateKey readPrivateKey(Path keyPath, Supplier<char[]> passwordSupplier) throws IOException, GeneralSecurityException {
         try (BufferedReader bReader = Files.newBufferedReader(keyPath, StandardCharsets.UTF_8)) {
-            String line = bReader.readLine();
+            String line = BoundedLineReader.readLine(bReader, 5_000_000);
             while (null != line && line.startsWith(HEADER) == false) {
-                line = bReader.readLine();
+                line = BoundedLineReader.readLine(bReader, 5_000_000);
             }
             if (null == line) {
                 throw new SslConfigException("Error parsing Private Key [" + keyPath.toAbsolutePath() + "], file is empty");
@@ -138,18 +139,18 @@ final class PemUtils {
      * @throws IOException if the EC Parameter footer is missing
      */
     private static BufferedReader removeECHeaders(BufferedReader bReader) throws IOException {
-        String line = bReader.readLine();
+        String line = BoundedLineReader.readLine(bReader, 5_000_000);
         while (line != null) {
             if (OPENSSL_EC_PARAMS_FOOTER.equals(line.trim())) {
                 break;
             }
-            line = bReader.readLine();
+            line = BoundedLineReader.readLine(bReader, 5_000_000);
         }
         if (null == line || OPENSSL_EC_PARAMS_FOOTER.equals(line.trim()) == false) {
             throw new IOException("Malformed PEM file, EC Parameters footer is missing");
         }
         // Verify that the key starts with the correct header before passing it to parseOpenSslEC
-        if (OPENSSL_EC_HEADER.equals(bReader.readLine()) == false) {
+        if (OPENSSL_EC_HEADER.equals(BoundedLineReader.readLine(bReader, 5_000_000)) == false) {
             throw new IOException("Malformed PEM file, EC Key header is missing");
         }
         return bReader;
@@ -162,18 +163,18 @@ final class PemUtils {
      * @throws IOException if the EC Parameter footer is missing
      */
     private static BufferedReader removeDsaHeaders(BufferedReader bReader) throws IOException {
-        String line = bReader.readLine();
+        String line = BoundedLineReader.readLine(bReader, 5_000_000);
         while (line != null) {
             if (OPENSSL_DSA_PARAMS_FOOTER.equals(line.trim())) {
                 break;
             }
-            line = bReader.readLine();
+            line = BoundedLineReader.readLine(bReader, 5_000_000);
         }
         if (null == line || OPENSSL_DSA_PARAMS_FOOTER.equals(line.trim()) == false) {
             throw new IOException("Malformed PEM file, DSA Parameters footer is missing");
         }
         // Verify that the key starts with the correct header before passing it to parseOpenSslDsa
-        if (OPENSSL_DSA_HEADER.equals(bReader.readLine()) == false) {
+        if (OPENSSL_DSA_HEADER.equals(BoundedLineReader.readLine(bReader, 5_000_000)) == false) {
             throw new IOException("Malformed PEM file, DSA Key header is missing");
         }
         return bReader;
@@ -190,13 +191,13 @@ final class PemUtils {
      */
     private static PrivateKey parsePKCS8(BufferedReader bReader) throws IOException, GeneralSecurityException {
         StringBuilder sb = new StringBuilder();
-        String line = bReader.readLine();
+        String line = BoundedLineReader.readLine(bReader, 5_000_000);
         while (line != null) {
             if (PKCS8_FOOTER.equals(line.trim())) {
                 break;
             }
             sb.append(line.trim());
-            line = bReader.readLine();
+            line = BoundedLineReader.readLine(bReader, 5_000_000);
         }
         if (null == line || PKCS8_FOOTER.equals(line.trim()) == false) {
             throw new IOException("Malformed PEM file, PEM footer is invalid or missing");
@@ -220,7 +221,7 @@ final class PemUtils {
     private static PrivateKey parseOpenSslEC(BufferedReader bReader, Supplier<char[]> passwordSupplier) throws IOException,
         GeneralSecurityException {
         StringBuilder sb = new StringBuilder();
-        String line = bReader.readLine();
+        String line = BoundedLineReader.readLine(bReader, 5_000_000);
         Map<String, String> pemHeaders = new HashMap<>();
         while (line != null) {
             if (OPENSSL_EC_FOOTER.equals(line.trim())) {
@@ -233,7 +234,7 @@ final class PemUtils {
             } else {
                 sb.append(line.trim());
             }
-            line = bReader.readLine();
+            line = BoundedLineReader.readLine(bReader, 5_000_000);
         }
         if (null == line || OPENSSL_EC_FOOTER.equals(line.trim()) == false) {
             throw new IOException("Malformed PEM file, PEM footer is invalid or missing");
@@ -257,7 +258,7 @@ final class PemUtils {
     private static PrivateKey parsePKCS1Rsa(BufferedReader bReader, Supplier<char[]> passwordSupplier) throws IOException,
         GeneralSecurityException {
         StringBuilder sb = new StringBuilder();
-        String line = bReader.readLine();
+        String line = BoundedLineReader.readLine(bReader, 5_000_000);
         Map<String, String> pemHeaders = new HashMap<>();
 
         while (line != null) {
@@ -272,7 +273,7 @@ final class PemUtils {
             } else {
                 sb.append(line.trim());
             }
-            line = bReader.readLine();
+            line = BoundedLineReader.readLine(bReader, 5_000_000);
         }
         if (null == line || PKCS1_FOOTER.equals(line.trim()) == false) {
             throw new IOException("Malformed PEM file, PEM footer is invalid or missing");
@@ -296,7 +297,7 @@ final class PemUtils {
     private static PrivateKey parseOpenSslDsa(BufferedReader bReader, Supplier<char[]> passwordSupplier) throws IOException,
         GeneralSecurityException {
         StringBuilder sb = new StringBuilder();
-        String line = bReader.readLine();
+        String line = BoundedLineReader.readLine(bReader, 5_000_000);
         Map<String, String> pemHeaders = new HashMap<>();
 
         while (line != null) {
@@ -311,7 +312,7 @@ final class PemUtils {
             } else {
                 sb.append(line.trim());
             }
-            line = bReader.readLine();
+            line = BoundedLineReader.readLine(bReader, 5_000_000);
         }
         if (null == line || OPENSSL_DSA_FOOTER.equals(line.trim()) == false) {
             throw new IOException("Malformed PEM file, PEM footer is invalid or missing");
@@ -335,13 +336,13 @@ final class PemUtils {
     private static PrivateKey parsePKCS8Encrypted(BufferedReader bReader, char[] keyPassword) throws IOException,
         GeneralSecurityException {
         StringBuilder sb = new StringBuilder();
-        String line = bReader.readLine();
+        String line = BoundedLineReader.readLine(bReader, 5_000_000);
         while (line != null) {
             if (PKCS8_ENCRYPTED_FOOTER.equals(line.trim())) {
                 break;
             }
             sb.append(line.trim());
-            line = bReader.readLine();
+            line = BoundedLineReader.readLine(bReader, 5_000_000);
         }
         if (null == line || PKCS8_ENCRYPTED_FOOTER.equals(line.trim()) == false) {
             throw new IOException("Malformed PEM file, PEM footer is invalid or missing");

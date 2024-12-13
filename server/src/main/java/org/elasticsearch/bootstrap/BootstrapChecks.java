@@ -19,6 +19,7 @@
 
 package org.elasticsearch.bootstrap;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ParameterizedMessage;
@@ -459,7 +460,7 @@ final class BootstrapChecks {
 
         // visible for testing
         String readProcSysVmMaxMapCount(final BufferedReader bufferedReader) throws IOException {
-            return bufferedReader.readLine();
+            return BoundedLineReader.readLine(bufferedReader, 5_000_000);
         }
 
         // visible for testing

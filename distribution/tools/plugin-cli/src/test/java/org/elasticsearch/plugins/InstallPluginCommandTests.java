@@ -22,6 +22,7 @@ package org.elasticsearch.plugins;
 import com.carrotsearch.randomizedtesting.annotations.ParametersFactory;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
+import io.github.pixee.security.BoundedLineReader;
 import org.apache.lucene.util.LuceneTestCase;
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.bcpg.BCPGOutputStream;
@@ -729,20 +730,20 @@ public class InstallPluginCommandTests extends ESTestCase {
             }
         }.main(new String[] { "--help" }, terminal);
         try (BufferedReader reader = new BufferedReader(new StringReader(terminal.getOutput()))) {
-            String line = reader.readLine();
+            String line = BoundedLineReader.readLine(reader, 5_000_000);
 
             // first find the beginning of our list of official plugins
             while (line.endsWith("may be installed by name:") == false) {
-                line = reader.readLine();
+                line = BoundedLineReader.readLine(reader, 5_000_000);
             }
 
             // now check each line compares greater than the last, until we reach an empty line
-            String prev = reader.readLine();
-            line = reader.readLine();
+            String prev = BoundedLineReader.readLine(reader, 5_000_000);
+            line = BoundedLineReader.readLine(reader, 5_000_000);
             while (line != null && line.trim().isEmpty() == false) {
                 assertTrue(prev + " < " + line, prev.compareTo(line) < 0);
                 prev = line;
-                line = reader.readLine();
+                line = BoundedLineReader.readLine(reader, 5_000_000);
                 // qa is not really a plugin and it shouldn't sneak in
                 assertThat(line, not(endsWith("qa")));
                 assertThat(line, not(endsWith("example")));

@@ -1,5 +1,6 @@
 package org.elasticsearch.gradle.info;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.elasticsearch.gradle.OS;
 import org.gradle.api.GradleException;
 import org.gradle.api.JavaVersion;
@@ -133,7 +134,7 @@ public class GlobalBuildInfoPlugin implements Plugin<Project> {
             new InputStreamReader(GlobalBuildInfoPlugin.class.getResourceAsStream(resourcePath))
         )) {
             StringBuilder b = new StringBuilder();
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+            for (String line = BoundedLineReader.readLine(reader, 5_000_000); line != null; line = BoundedLineReader.readLine(reader, 5_000_000)) {
                 if (b.length() != 0) {
                     b.append('\n');
                 }
@@ -157,7 +158,7 @@ public class GlobalBuildInfoPlugin implements Plugin<Project> {
                 String currentID = "";
 
                 try (BufferedReader reader = new BufferedReader(new FileReader(cpuInfoFile))) {
-                    for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                    for (String line = BoundedLineReader.readLine(reader, 5_000_000); line != null; line = BoundedLineReader.readLine(reader, 5_000_000)) {
                         if (line.contains(":")) {
                             List<String> parts = Arrays.stream(line.split(":", 2)).map(String::trim).collect(Collectors.toList());
                             String name = parts.get(0);

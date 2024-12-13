@@ -19,6 +19,7 @@
 
 package org.elasticsearch.qa.die_with_dignity;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.common.settings.Settings;
@@ -52,7 +53,7 @@ public class DieWithDignityIT extends ESRestTestCase {
             try (InputStream is = process.getInputStream();
                  BufferedReader in = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
                 String line;
-                while ((line = in.readLine()) != null) {
+                while ((line = BoundedLineReader.readLine(in, 5_000_000)) != null) {
                     assertThat(line, line, not(containsString("-Ddie.with.dignity.test")));
                 }
             }

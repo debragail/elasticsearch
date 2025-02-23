@@ -19,6 +19,8 @@
 
 package org.elasticsearch.painless;
 
+import io.github.pixee.security.HostValidator;
+import io.github.pixee.security.Urls;
 import org.elasticsearch.bootstrap.BootstrapInfo;
 import org.elasticsearch.painless.antlr.Walker;
 import org.elasticsearch.painless.lookup.PainlessLookup;
@@ -59,7 +61,7 @@ final class Compiler {
     static {
         try {
             // Setup the code privileges.
-            CODESOURCE = new CodeSource(new URL("file:" + BootstrapInfo.UNTRUSTED_CODEBASE), (Certificate[]) null);
+            CODESOURCE = new CodeSource(Urls.create("file:" + BootstrapInfo.UNTRUSTED_CODEBASE, Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS), (Certificate[]) null);
         } catch (MalformedURLException impossible) {
             throw new RuntimeException(impossible);
         }

@@ -20,6 +20,7 @@
 package org.elasticsearch.discovery.ec2;
 
 import com.amazonaws.util.EC2MetadataUtils;
+import io.github.pixee.security.BoundedLineReader;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -100,7 +101,7 @@ class Ec2NameResolver implements CustomNameResolver {
             in = SocketAccess.doPrivilegedIOException(urlConnection::getInputStream);
             BufferedReader urlReader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 
-            String metadataResult = urlReader.readLine();
+            String metadataResult = BoundedLineReader.readLine(urlReader, 5_000_000);
             if (metadataResult == null || metadataResult.length() == 0) {
                 throw new IOException("no gce metadata returned from [" + url + "] for [" + type.configName + "]");
             }

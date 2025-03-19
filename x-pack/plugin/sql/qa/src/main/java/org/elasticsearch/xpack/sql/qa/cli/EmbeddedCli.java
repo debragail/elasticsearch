@@ -5,6 +5,7 @@
  */
 package org.elasticsearch.xpack.sql.qa.cli;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.cli.MockTerminal;
@@ -288,7 +289,7 @@ public class EmbeddedCli implements Closeable {
          *
          * `null` means EOF so we should just pass that back through.
          */
-        String line = in.readLine();
+        String line = BoundedLineReader.readLine(in, 5_000_000);
         line = line == null ? null : line.replace("\u001B", "");
         logger.info("in : {}", line);
         return line;

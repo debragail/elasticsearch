@@ -19,6 +19,7 @@
 
 package org.elasticsearch.plugins;
 
+import io.github.pixee.security.BoundedLineReader;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import org.apache.lucene.search.spell.LevenshteinDistance;
@@ -471,13 +472,13 @@ class InstallPluginCommand extends EnvironmentAwareCommand {
              */
             if (digestAlgo.equals("SHA-1")) {
                 final BufferedReader checksumReader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-                expectedChecksum = checksumReader.readLine();
-                if (checksumReader.readLine() != null) {
+                expectedChecksum = BoundedLineReader.readLine(checksumReader, 5_000_000);
+                if (BoundedLineReader.readLine(checksumReader, 5_000_000) != null) {
                     throw new UserException(ExitCodes.IO_ERROR, "Invalid checksum file at " + checksumUrl);
                 }
             } else {
                 final BufferedReader checksumReader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-                final String checksumLine = checksumReader.readLine();
+                final String checksumLine = BoundedLineReader.readLine(checksumReader, 5_000_000);
                 final String[] fields = checksumLine.split(" {2}");
                 if (fields.length != 2) {
                     throw new UserException(ExitCodes.IO_ERROR, "Invalid checksum file at " + checksumUrl);
@@ -494,7 +495,7 @@ class InstallPluginCommand extends EnvironmentAwareCommand {
                             fields[1]);
                     throw new UserException(ExitCodes.IO_ERROR, message);
                 }
-                if (checksumReader.readLine() != null) {
+                if (BoundedLineReader.readLine(checksumReader, 5_000_000) != null) {
                     throw new UserException(ExitCodes.IO_ERROR, "Invalid checksum file at " + checksumUrl);
                 }
             }

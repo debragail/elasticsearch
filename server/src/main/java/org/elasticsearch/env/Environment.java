@@ -19,6 +19,8 @@
 
 package org.elasticsearch.env;
 
+import io.github.pixee.security.HostValidator;
+import io.github.pixee.security.Urls;
 import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.cluster.node.DiscoveryNode;
 import org.elasticsearch.common.SuppressForbidden;
@@ -236,7 +238,7 @@ public class Environment {
                 }
                 String jarTail = file.substring(pos);
                 String filePath = file.substring(0, pos);
-                URL internalUrl = new URL(filePath);
+                URL internalUrl = Urls.create(filePath, Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
                 URL normalizedUrl = resolveRepoURL(internalUrl);
                 if (normalizedUrl == null) {
                     return null;

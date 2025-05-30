@@ -5,6 +5,8 @@
  */
 package org.elasticsearch.xpack.sql.qa.jdbc;
 
+import io.github.pixee.security.HostValidator;
+import io.github.pixee.security.Urls;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.common.SuppressForbidden;
 import org.elasticsearch.common.collect.Tuple;
@@ -188,7 +190,7 @@ final class JdbcTestUtils {
                         String name = entry.getName();
                         Tuple<String, String> entrySplit = pathAndName(name);
                         if (root.equals(entrySplit.v1()) && Regex.simpleMatch(filePattern, entrySplit.v2())) {
-                            matches.add(new URL("jar:" + path.toUri() + "!/" + name));
+                            matches.add(Urls.create("jar:" + path.toUri() + "!/" + name, Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS));
                         }
                     }
                 }

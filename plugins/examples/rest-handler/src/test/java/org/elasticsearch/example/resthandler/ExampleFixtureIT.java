@@ -19,6 +19,8 @@
 
 package org.elasticsearch.example.resthandler;
 
+import io.github.pixee.security.HostValidator;
+import io.github.pixee.security.Urls;
 import org.elasticsearch.mocksocket.MockSocket;
 import org.elasticsearch.test.ESTestCase;
 
@@ -41,7 +43,7 @@ public class ExampleFixtureIT extends ESTestCase {
         final String externalAddress = System.getProperty("external.address");
         assertNotNull("External address must not be null", externalAddress);
 
-        final URL url = new URL("http://" + externalAddress);
+        final URL url = Urls.create("http://" + externalAddress, Urls.HTTP_PROTOCOLS, HostValidator.DENY_COMMON_INFRASTRUCTURE_TARGETS);
         final InetAddress address = InetAddress.getByName(url.getHost());
         try (
             Socket socket = new MockSocket(address, url.getPort());

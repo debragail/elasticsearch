@@ -19,6 +19,7 @@
 
 package org.elasticsearch.packaging.util;
 
+import io.github.pixee.security.BoundedLineReader;
 import org.elasticsearch.common.SuppressForbidden;
 
 import java.io.BufferedReader;
@@ -207,7 +208,7 @@ public class Shell {
                 BufferedReader reader = new BufferedReader(reader(input));
                 String line;
 
-                while ((line = reader.readLine()) != null) {
+                while ((line = BoundedLineReader.readLine(reader, 5_000_000)) != null) {
                     appendable.append(line);
                     appendable.append("\n");
                 }

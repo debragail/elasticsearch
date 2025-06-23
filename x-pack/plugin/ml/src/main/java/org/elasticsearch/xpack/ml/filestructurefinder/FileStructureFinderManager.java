@@ -7,6 +7,7 @@ package org.elasticsearch.xpack.ml.filestructurefinder;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
+import io.github.pixee.security.BoundedLineReader;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchTimeoutException;
 import org.elasticsearch.common.collect.Tuple;
@@ -532,7 +533,7 @@ public final class FileStructureFinderManager {
         }
 
         String line;
-        while ((line = bufferedReader.readLine()) != null && ++lineCount <= maxLines) {
+        while ((line = BoundedLineReader.readLine(bufferedReader, 5_000_000)) != null && ++lineCount <= maxLines) {
             sample.append(line).append('\n');
             timeoutChecker.check("sample line splitting");
         }

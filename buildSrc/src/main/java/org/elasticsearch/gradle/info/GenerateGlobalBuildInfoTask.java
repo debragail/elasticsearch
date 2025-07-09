@@ -158,7 +158,7 @@ public class GenerateGlobalBuildInfoTask extends DefaultTask {
             throw new UncheckedIOException(e);
         }
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile.getAsFile().get()))) {
+        try (BufferedWriter writer = Files.newBufferedWriter(outputFile.getAsFile().get().toPath())) {
             writer.write("  Gradle Version        : " + getProject().getGradle().getGradleVersion() + "\n");
             writer.write("  OS Info               : " + System.getProperty("os.name") + " " + System.getProperty("os.version")
                 + " (" + System.getProperty("os.arch") + ")\n");

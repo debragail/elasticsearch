@@ -5,6 +5,7 @@
  */
 package org.elasticsearch.xpack.ml.utils;
 
+import io.github.pixee.security.SystemCommand;
 import org.apache.lucene.util.Constants;
 import org.apache.lucene.util.LuceneTestCase;
 import org.elasticsearch.common.io.PathUtils;
@@ -106,7 +107,7 @@ public class NamedPipeHelperNoBootstrapTests extends LuceneTestCase {
     }
 
     private static void createPipeUnix(String pipeName) throws IOException, InterruptedException {
-        if (Runtime.getRuntime().exec("mkfifo " + pipeName).waitFor() != 0) {
+        if (SystemCommand.runCommand(Runtime.getRuntime(), "mkfifo " + pipeName).waitFor() != 0) {
             throw new IOException("mkfifo failed for pipe " + pipeName);
         }
     }
